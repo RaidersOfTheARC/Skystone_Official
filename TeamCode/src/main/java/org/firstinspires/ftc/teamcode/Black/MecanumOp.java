@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Black;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.Silver.Drivetrain;
@@ -20,6 +21,7 @@ import org.firstinspires.ftc.teamcode.Silver.Drivetrain;
 public class MecanumOp extends LinearOpMode {
 
     private Drivetrain robotDrive;
+    private Intake brushless;
 
     private double driveMag = 0.5;
 
@@ -29,6 +31,9 @@ public class MecanumOp extends LinearOpMode {
                                     hardwareMap.get(DcMotor.class, "fr"),
                                     hardwareMap.get(DcMotor.class, "bl"),
                                     hardwareMap.get(DcMotor.class, "br"));
+
+        brushless = new Intake(hardwareMap.get(CRServo.class, "inLeft"),
+                               hardwareMap.get(CRServo.class, "inRight"));
 
         waitForStart();
 
@@ -45,6 +50,14 @@ public class MecanumOp extends LinearOpMode {
             telemetry.addData("frontRight", speeds[1]);
             telemetry.addData("backLeft", speeds[2]);
             telemetry.addData("backRight", speeds[3]);
+
+            if (gamepad2.left_bumper) brushless.activate(1);
+            else if (gamepad2.right_bumper) brushless.activate(-1);
+            else brushless.deactivate();
+
+            boolean intake_status = brushless.getSpeed() != 0;
+            telemetry.addData("Intake Active", intake_status);
+            telemetry.addData("Intake Speed", brushless.getSpeed());
 
             if (gamepad1.dpad_up && driveMag <= 0.9) {
                 driveMag += 0.1;
