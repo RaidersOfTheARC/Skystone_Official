@@ -1,12 +1,20 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Silver;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name="Drive Testing")
+/**
+ * The practice mecanum teleop for Raiders of the ARC Silver,
+ * team 10396. We are housed in Alpharetta High School, GA.
+ * This code was made by Jackson Isenberg, ARC Programming Chair,
+ * in 2019.
+ */
+
+@TeleOp(name="Drive Testing", group="Silver")
 // @Disabled
 public class MecanumOp extends OpMode {
 
