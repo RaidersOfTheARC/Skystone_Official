@@ -22,6 +22,7 @@ public class MecanumOp extends LinearOpMode {
 
     private Drivetrain robotDrive;
     private Intake brushless;
+    private V4BOuttake v4b;
 
     private double driveMag = 0.5;
 
@@ -34,6 +35,8 @@ public class MecanumOp extends LinearOpMode {
 
         brushless = new Intake(hardwareMap.get(CRServo.class, "inLeft"),
                                hardwareMap.get(CRServo.class, "inRight"));
+
+        v4b = new V4BOuttake(hardwareMap.get(CRServo.class, "v4b"));
 
         waitForStart();
 
@@ -58,6 +61,8 @@ public class MecanumOp extends LinearOpMode {
             boolean intake_status = brushless.getSpeed() != 0;
             telemetry.addData("Intake Active", intake_status);
             telemetry.addData("Intake Speed", brushless.getSpeed());
+
+            v4b.activate(gamepad2.right_stick_y);
 
             if (gamepad1.dpad_up && driveMag <= 0.9) {
                 driveMag += 0.1;

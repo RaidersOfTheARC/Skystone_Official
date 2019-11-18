@@ -5,14 +5,10 @@ import com.qualcomm.robotcore.hardware.CRServo;
 public class Intake {
 
     private CRServo left, right;
-    private V4BOuttake lift;
 
-    public Intake(CRServo l, CRServo r, V4BOuttake v4b) {
+    public Intake(CRServo l, CRServo r) {
         left = l;
         right = r;
-        lift = v4b;
-
-        init();
     }
 
     public void init() {
