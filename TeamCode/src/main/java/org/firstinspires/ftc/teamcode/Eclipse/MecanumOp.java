@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.Silver.Drivetrain;
 public class MecanumOp extends OpMode {
 
     private Drivetrain robotDrive;
+    private Claw scoop;
 
     private double driveMag = 0.5;
 
@@ -28,6 +29,9 @@ public class MecanumOp extends OpMode {
                                     hardwareMap.get(DcMotor.class, "fr"),
                                     hardwareMap.get(DcMotor.class, "bl"),
                                     hardwareMap.get(DcMotor.class, "br"));
+
+        scoop = new Claw(hardwareMap.get(DcMotor.class, "leftClaw"),
+                         hardwareMap.get(DcMotor.class, "rightClaw"));
     }
 
     @Override
@@ -44,6 +48,10 @@ public class MecanumOp extends OpMode {
         telemetry.addData("frontRight", speeds[1]);
         telemetry.addData("backLeft", speeds[2]);
         telemetry.addData("backRight", speeds[3]);
+
+        scoop.activate(gamepad2.right_stick_y);
+
+        telemetry.addData("Claw Speed", scoop.getSpeed());
 
         try {
             if (gamepad1.dpad_up && driveMag <= 0.9) {
