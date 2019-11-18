@@ -9,6 +9,8 @@ public class Claw {
     public Claw(DcMotor l, DcMotor r) {
         left = l;
         right = r;
+        
+        init();
     }
 
     public void init() {
