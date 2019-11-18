@@ -10,9 +10,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 // @Disabled
 public class MecanumOp extends OpMode {
 
-    private DcMotor fL, fR, bL, bR, lift, intakeL, intakeR;
-    private Servo foundationL, foundationR, blockHolder;
-    private CRServo grabber, rackL, rackR;
+    private DcMotor fL, fR, bL, bR;
+    private Servo foundationL, foundationR;
+    private CRServo rackL, rackR;
+    private StoneElevator lift;
+    private Intake intake;
 
     private double driveMag = 0.5;
     private boolean blockIsHeld = false;
@@ -23,25 +25,25 @@ public class MecanumOp extends OpMode {
         fR = hardwareMap.get(DcMotor.class, "rightFront");
         bL = hardwareMap.get(DcMotor.class, "leftBack");
         bR = hardwareMap.get(DcMotor.class, "rightBack");
-        lift = hardwareMap.get(DcMotor.class, "lift");
-        intakeL = hardwareMap.get(DcMotor.class, "intakeLeft");
-        intakeR = hardwareMap.get(DcMotor.class, "intakeRight");
+
+        lift = new StoneElevator(hardwareMap.get(DcMotor.class, "lift"),
+                                 hardwareMap.get(CRServo.class, "grabber"));
+
+        intake = new Intake(hardwareMap.get(DcMotor.class, "intakeLeft"),
+                            hardwareMap.get(DcMotor.class, "intakeRight"),
+                            hardwareMap.get(Servo.class, "blockHolder"));
 
         foundationL = hardwareMap.get(Servo.class, "foundationL");
         foundationR = hardwareMap.get(Servo.class, "foundationR");
-        grabber = hardwareMap.get(CRServo.class, "grabber");
         rackL = hardwareMap.get(CRServo.class, "forward1");
         rackR = hardwareMap.get(CRServo.class, "forward2");
-        blockHolder = hardwareMap.get(Servo.class, "blockHolder");
 
         fL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         fL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         fR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         bL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         bR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -50,14 +52,9 @@ public class MecanumOp extends OpMode {
         fR.setDirection(DcMotor.Direction.REVERSE);
         bL.setDirection(DcMotor.Direction.FORWARD);
         bR.setDirection(DcMotor.Direction.REVERSE);
-        lift.setDirection(DcMotor.Direction.REVERSE);
-        intakeR.setDirection(DcMotor.Direction.REVERSE);
-        intakeL.setDirection(DcMotor.Direction.FORWARD);
 
         foundationL.setDirection(Servo.Direction.FORWARD);
         foundationR.setDirection(Servo.Direction.REVERSE);
-        blockHolder.setDirection(Servo.Direction.REVERSE);
-        grabber.setDirection(CRServo.Direction.REVERSE);
         // rackL.setDirection(CRServo.Direction.FORWARD);
         // rackR.setDirection(CRServo.Direction.REVERSE);
 
@@ -65,8 +62,6 @@ public class MecanumOp extends OpMode {
         foundationR.scaleRange(0, 0.8);
         foundationL.setPosition(0);
         foundationR.setPosition(0);
-        blockHolder.setPosition(1);
-        grabber.setPower(0);
     }
 
     @Override
@@ -85,16 +80,18 @@ public class MecanumOp extends OpMode {
         telemetry.addData("backLeft", bL.getPower());
         telemetry.addData("backRight", bR.getPower());
 
-        lift(gamepad2.left_stick_y);
+        lift.activate(gamepad2.left_stick_y * 0.1);
+        if (gamepad2.left_bumper) lift.engage();
+        else lift.disengage();
 
-        telemetry.addData("Lift Speed", lift.getPower());
+        telemetry.addData("Lift Speed", lift.getLiftSpeed());
+        telemetry.addData("Grabber Active", lift.isEngaged());
 
-        if (gamepad1.left_bumper) intake(0.75);
-        else if (gamepad1.right_bumper) intake(-0.75);
-        else intake(0);
+        if (gamepad1.left_bumper) intake.activate(0.75);
+        else if (gamepad1.right_bumper) intake.activate(-0.75);
+        else intake.activate(0);
 
-        double avgIntakePow = (intakeL.getPower() + intakeR.getPower()) / 2;
-        telemetry.addData("Intake Speed", avgIntakePow);
+        telemetry.addData("Intake Speed", intake.getIntakeSpeed());
 
         if (gamepad2.a) {
             foundationLever(0);
@@ -112,27 +109,7 @@ public class MecanumOp extends OpMode {
         telemetry.addData("Rack Speed", avgRackSpeed);
          */
 
-        if (gamepad2.x && !blockIsHeld) {
-            setBlockHolder(0.5);
-            blockIsHeld = true;
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                telemetry.addData("Warning", "thread slept");
-            }
-        } else if (gamepad2.x) {
-            setBlockHolder(1);
-            blockIsHeld = false;
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                telemetry.addData("Warning", "thread slept");
-            }
-        }
-
-        telemetry.addData("Block Holder Position", blockHolder.getPosition());
-
-        setGrabber(gamepad2.left_trigger);
+        telemetry.addData("Block Holder Position", intake.isHeld());
 
         try {
             if (gamepad1.dpad_up && driveMag <= 0.9) {
@@ -167,26 +144,9 @@ public class MecanumOp extends OpMode {
         return speeds;
     }
 
-    public void lift(double pow) {
-        lift.setPower(pow / 8);
-    }
-
-    public void intake(double pow) {
-        intakeL.setPower(pow);
-        intakeR.setPower(pow);
-    }
-
     public void foundationLever(double pos) {
         foundationL.setPosition(pos);
         foundationR.setPosition(pos);
-    }
-
-    public void setBlockHolder(double pos) {
-        blockHolder.setPosition(pos);
-    }
-
-    public void setGrabber(double pow) {
-        grabber.setPower(pow);
     }
 
     /*
