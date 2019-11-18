@@ -10,22 +10,16 @@ import com.qualcomm.robotcore.hardware.Servo;
 // @Disabled
 public class MecanumOp extends OpMode {
 
-    private DcMotor fL, fR, bL, bR;
     private Servo foundationL, foundationR;
     private CRServo rackL, rackR;
     private StoneElevator lift;
     private Intake intake;
+    private Drivetrain drive;
 
     private double driveMag = 0.5;
-    private boolean blockIsHeld = false;
 
     @Override
     public void init() {
-        fL = hardwareMap.get(DcMotor.class, "leftFront");
-        fR = hardwareMap.get(DcMotor.class, "rightFront");
-        bL = hardwareMap.get(DcMotor.class, "leftBack");
-        bR = hardwareMap.get(DcMotor.class, "rightBack");
-
         lift = new StoneElevator(hardwareMap.get(DcMotor.class, "lift"),
                                  hardwareMap.get(CRServo.class, "grabber"));
 
@@ -33,25 +27,15 @@ public class MecanumOp extends OpMode {
                             hardwareMap.get(DcMotor.class, "intakeRight"),
                             hardwareMap.get(Servo.class, "blockHolder"));
 
+        drive = new Drivetrain(hardwareMap.get(DcMotor.class, "leftFront"),
+                               hardwareMap.get(DcMotor.class, "rightFront"),
+                               hardwareMap.get(DcMotor.class, "leftBack"),
+                               hardwareMap.get(DcMotor.class, "rightBack"));
+
         foundationL = hardwareMap.get(Servo.class, "foundationL");
         foundationR = hardwareMap.get(Servo.class, "foundationR");
         rackL = hardwareMap.get(CRServo.class, "forward1");
         rackR = hardwareMap.get(CRServo.class, "forward2");
-
-        fL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        fR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        bL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        bR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        fL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        fR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        bL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        bR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        fL.setDirection(DcMotor.Direction.FORWARD);
-        fR.setDirection(DcMotor.Direction.REVERSE);
-        bL.setDirection(DcMotor.Direction.FORWARD);
-        bR.setDirection(DcMotor.Direction.REVERSE);
 
         foundationL.setDirection(Servo.Direction.FORWARD);
         foundationR.setDirection(Servo.Direction.REVERSE);
@@ -66,19 +50,18 @@ public class MecanumOp extends OpMode {
 
     @Override
     public void loop() {
-        double speeds[] = driveMecanum(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
-
         telemetry.addData("Drive Speed Multiplier", driveMag);
 
-        fL.setPower(driveMag * speeds[0]);
-        fR.setPower(driveMag * speeds[1]);
-        bL.setPower(driveMag * speeds[2]);
-        bR.setPower(driveMag * speeds[3]);
+        double x = gamepad1.left_stick_x;
+        double y = gamepad1.left_stick_y;
+        double turn = gamepad1.right_stick_x;
+        drive.drive(x, y, turn, driveMag);
 
-        telemetry.addData("frontLeft", fL.getPower());
-        telemetry.addData("frontRight", fR.getPower());
-        telemetry.addData("backLeft", bL.getPower());
-        telemetry.addData("backRight", bR.getPower());
+        double[] speeds = drive.getSpeeds();
+        telemetry.addData("frontLeft", speeds[0]);
+        telemetry.addData("frontRight", speeds[1]);
+        telemetry.addData("backLeft", speeds[2]);
+        telemetry.addData("backRight", speeds[3]);
 
         lift.activate(gamepad2.left_stick_y * 0.1);
         if (gamepad2.left_bumper) lift.engage();
@@ -128,20 +111,6 @@ public class MecanumOp extends OpMode {
         } catch (InterruptedException e) {
             telemetry.addData("Warning","thread slept");
         }
-    }
-
-    public double[] driveMecanum(double x, double y, double turn) {
-        double[] speeds = new double[4];
-
-        double j = Math.hypot(x,y);
-        double theta = Math.atan2(-y,x);
-
-        speeds[0] = j * Math.sin(theta + Math.PI / 4) + turn;  // fL
-        speeds[1] = j * Math.sin(theta - Math.PI / 4) - turn;  // fR
-        speeds[2] = j * Math.sin(theta - Math.PI / 4) + turn;  // bL
-        speeds[3] = j * Math.sin(theta + Math.PI / 4) - turn;  // bR
-
-        return speeds;
     }
 
     public void foundationLever(double pos) {
