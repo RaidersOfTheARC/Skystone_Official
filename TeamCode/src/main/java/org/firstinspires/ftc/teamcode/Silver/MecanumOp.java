@@ -100,7 +100,7 @@ public class MecanumOp extends OpMode {
         telemetry.addData("Rack Speed", avgRackSpeed);
          */
 
-        telemetry.addData("Block Holder Position", intake.isHeld());
+        telemetry.addData("Block Holder Active", intake.isHeld());
 
         try {
             if (gamepad1.dpad_up && driveMag <= 0.9) {

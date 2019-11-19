@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.Silver.Drivetrain;
 
@@ -23,6 +24,7 @@ public class MecanumOp extends LinearOpMode {
     private Drivetrain robotDrive;
     private Intake brushless;
     private V4BOuttake v4b;
+    private Grabber blockHolder;
 
     private double driveMag = 0.5;
 
@@ -37,6 +39,8 @@ public class MecanumOp extends LinearOpMode {
                                hardwareMap.get(CRServo.class, "inRight"));
 
         v4b = new V4BOuttake(hardwareMap.get(CRServo.class, "v4b"));
+
+        blockHolder = new Grabber(hardwareMap.get(Servo.class, "grabber"));
 
         waitForStart();
 
@@ -63,6 +67,12 @@ public class MecanumOp extends LinearOpMode {
             telemetry.addData("Intake Speed", brushless.getSpeed());
 
             v4b.activate(gamepad2.right_stick_y);
+            telemetry.addData("Outtake Speed", v4b.getSpeed());
+
+            if (gamepad2.a) blockHolder.activate(1);
+            else blockHolder.activate(0);
+
+            telemetry.addData("Stone Holder Active", blockHolder.isActive());
 
             if (gamepad1.dpad_up && driveMag <= 0.9) {
                 driveMag += 0.1;
