@@ -9,6 +9,8 @@ public class Intake {
     public Intake(CRServo l, CRServo r) {
         left = l;
         right = r;
+        
+        init();
     }
 
     public void init() {
