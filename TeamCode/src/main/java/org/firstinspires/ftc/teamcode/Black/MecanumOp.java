@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.Silver.Drivetrain;
  */
 
 // Black team has a linear op mode because they're special
-@TeleOp(name="Drive Testing", group="Black")
+@TeleOp(name="Driver Testing", group="Black")
 // @Disabled
 public class MecanumOp extends LinearOpMode {
 
