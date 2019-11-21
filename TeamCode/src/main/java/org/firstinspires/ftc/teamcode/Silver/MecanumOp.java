@@ -18,9 +18,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 // @Disabled
 public class MecanumOp extends OpMode {
 
-    private Servo foundationL, foundationR;
-    private CRServo rackL, rackR;
+    private CRServo rack;
     private StoneElevator lift;
+    private Foundation foundationLever;
     private Intake intake;
     private Drivetrain drive;
 
@@ -40,20 +40,13 @@ public class MecanumOp extends OpMode {
                                hardwareMap.get(DcMotor.class, "leftBack"),
                                hardwareMap.get(DcMotor.class, "rightBack"));
 
-        foundationL = hardwareMap.get(Servo.class, "foundationL");
-        foundationR = hardwareMap.get(Servo.class, "foundationR");
-        rackL = hardwareMap.get(CRServo.class, "forward1");
-        rackR = hardwareMap.get(CRServo.class, "forward2");
+        foundationLever = new Foundation(hardwareMap.get(Servo.class, "foundationL"),
+                                         hardwareMap.get(Servo.class, "foundationR"));
 
-        foundationL.setDirection(Servo.Direction.FORWARD);
-        foundationR.setDirection(Servo.Direction.REVERSE);
+        rack = hardwareMap.get(CRServo.class, "rack");
+
         // rackL.setDirection(CRServo.Direction.FORWARD);
         // rackR.setDirection(CRServo.Direction.REVERSE);
-
-        foundationL.scaleRange(0, 0.8);
-        foundationR.scaleRange(0, 0.8);
-        foundationL.setPosition(0);
-        foundationR.setPosition(0);
     }
 
     @Override
@@ -85,14 +78,14 @@ public class MecanumOp extends OpMode {
         telemetry.addData("Intake Speed", intake.getIntakeSpeed());
 
         if (gamepad2.a) {
-            foundationLever(0);
+            foundationLever.activate();
         }
 
         if (gamepad2.b) {
-            foundationLever(1);
+            foundationLever.deactivate();
         }
 
-        telemetry.addData("Foundation Lever Position", foundationL.getPosition());
+        telemetry.addData("Foundation Lever Active", foundationLever.isActive());
 
         // moveRack(gamepad2.right_stick_y);
         /*
@@ -119,11 +112,6 @@ public class MecanumOp extends OpMode {
         } catch (InterruptedException e) {
             telemetry.addData("Warning","thread slept");
         }
-    }
-
-    public void foundationLever(double pos) {
-        foundationL.setPosition(pos);
-        foundationR.setPosition(pos);
     }
 
     /*
