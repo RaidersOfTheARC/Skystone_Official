@@ -77,12 +77,17 @@ public class MecanumOp extends OpMode {
 
         telemetry.addData("Intake Speed", intake.getIntakeSpeed());
 
-        if (gamepad2.a) {
-            foundationLever.activate();
-        }
-
-        if (gamepad2.b) {
-            foundationLever.deactivate();
+        try {
+            if (gamepad2.a && !foundationLever.isActive()) {
+                foundationLever.activate();
+                Thread.sleep(500);
+            }
+            if (gamepad2.a && foundationLever.isActive()) {
+                foundationLever.deactivate();
+                Thread.sleep(500);
+            }
+        } catch (InterruptedException e) {
+            telemetry.addData("You friggin moron", "you just got beaned");
         }
 
         telemetry.addData("Foundation Lever Active", foundationLever.isActive());
