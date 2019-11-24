@@ -54,22 +54,8 @@ public class Drivetrain {
         speeds[1] = j * Math.sin(theta - Math.PI / 4) - turn;  // fR
         speeds[2] = j * Math.sin(theta - Math.PI / 4) + turn;  // bL
         speeds[3] = j * Math.sin(theta + Math.PI / 4) - turn;  // bR
-        
-        double maxSpeed = findMax(speeds);
-        for (speed : speeds) {
-            speed /= maxSpeed;
-        }
 
         return speeds;
-    }
-    
-    // assume non-empty array
-    private double findMax(double[] arr) {
-        double max = arr[0];
-        for (int i = 1; i < arr.length; i++) {
-            if (arr[i] > max) max = arr[i];
-        }
-        return max;
     }
 
 }
