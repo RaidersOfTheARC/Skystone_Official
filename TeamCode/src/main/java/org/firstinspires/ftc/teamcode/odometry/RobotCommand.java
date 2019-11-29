@@ -5,13 +5,8 @@ package org.firstinspires.ftc.teamcode.Odometry;
  * We want to control the robot by forcing it to drive to a certain position.
  * We can also control the heading and PIDF coefficients. These will be tuned with time,
  * but for now we will set them to be 1 for the sake of example (exempli gratia).
- * In order to do this, we will use the PID mode RUN_USING_ENCODER with an additional
- * P control through a method known as gradient speed adjustment.
- * In order to create this P control, we just need to account for the proportional error.
- * This is done by doing error * kP. Our error will be nothing but our proportional distance from the
- * target and the kP value will be such that is fine-tuned to produce more accurate results.
- * The only change we will make is that the additional P loop will use a kP value of
- * 1/targetTicks.
+ * In order to do this, we will use the PID mode RUN_USING_ENCODER. Note that
+ * the speeds rely on field-centric modeling.
  */
 
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -20,34 +15,84 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients
 
 public class RobotCommand {
 
-  DcMotorEx fL, fR, bL, bR;
-  DcMotor oHoriz, oVertic;
-  PIDFCoefficients pidf;
-  double kp;
+  private DcMotorEx fL, fR, bL, bR;                   // drive motors
+  private PIDFCoefficients pidf;                      // pidf coefficients
+  private Position position;                          // current position on field
 
-  public RobotCommand(DcMotor[] driveMotors, DcMotor[] deadWheels) {
+  public RobotCommand(DcMotor[] driveMotors, Position pos) {
     fL = driveMotors[0];
     fR = driveMotors[1];
     bL = driveMotors[2];
     bR = driveMotors[3];
     
-    oHoriz = deadWheels[0];
-    oVertic = deadWheels[1];
+    position = pos;
     
     init();
   }
   
   /**
-   * Here, we are initiating our PIDF coefficients to be 1, 1, 1, 1.
-   * Our initial kp will be 0, but that will change when we are given a target position.
+   * Here, we are initiating our PIDF coefficients to the initial constructor
    */
   public void init() {
-    pidf = new PIDCoefficients(1,1,1,1);
-    kp = 0;
+    pidf = new PIDCoefficients();
+    
     fL.setVelocityPIDFCoefficients(pidf);
     fR.setVelocityPIDFCoefficients(pidf);
     bL.setVelocityPIDFCoefficients(pidf);
     bR.setVelocityPIDFCoefficients(pidf);
+  }
+  
+  // sets the target position (in ticks) and returns the current horizontal and vertical distance
+  public double[] setTarget(double[] tgt) {    
+    double xDist = tgt[0] - getCurrentX();
+    double yDist = tgt[1] - getCurrentY();
+    
+    return new double[]{xDist, yDist};
+  }
+  
+  public double getCurrentX() {
+    return position.getX();
+  }
+  
+  public double getCurrentY() {
+    return position.getY();
+  }
+  
+  public double[] driveToTarget(double[] tgt) {
+    double[] displacement = setTarget(tgt);
+    
+    // add a target tolerance if needed
+    /**
+     * As you can see, what this does is cause the speed to slow down
+     * as the robot nears its target. Make sure to tune the values
+     * for the PIDF coefficients so that the movement is more accurate.
+     */
+    while (displacement[0] > 0 && displacement[1] > 0) {
+      double[] speeds = driveMecanum(displacement[0], displacement[1], 0);
+      
+      fL.setVelocity(speeds[0]);
+      fR.setVelocity(speeds[1]);
+      bL.setVelocity(speeds[2]);
+      bR.setVelocity(speeds[3]);
+            
+      displacement = setTarget(tgt);
+    }
+    
+    return position.getPositon();  // use this for telemetry to see if the target position has been reached
+  }
+
+  private double[] driveMecanum(double x, double y, double turn) {
+    double[] speeds = new double[4];
+
+    double j = Math.hypot(x,y);
+    double theta = Math.atan2(-y,x) - position.getHead();
+
+    speeds[0] = j * Math.sin(theta + Math.PI / 4) + turn;  // fL
+    speeds[1] = j * Math.sin(theta - Math.PI / 4) - turn;  // fR
+    speeds[2] = j * Math.sin(theta - Math.PI / 4) + turn;  // bL
+    speeds[3] = j * Math.sin(theta + Math.PI / 4) - turn;  // bR
+
+    return speeds;
   }
 
 }
