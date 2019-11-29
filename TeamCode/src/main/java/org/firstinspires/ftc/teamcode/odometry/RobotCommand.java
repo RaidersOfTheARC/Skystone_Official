@@ -12,7 +12,7 @@ package org.firstinspires.ftc.teamcode.Odometry;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.GyroSensor;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 public class RobotCommand {
 
