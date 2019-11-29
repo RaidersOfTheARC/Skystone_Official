@@ -57,5 +57,9 @@ public class Drivetrain {
 
         return speeds;
     }
+    
+    public DcMotor[] getMotors() {
+        return new DcMotor[]{fL, fR, bL, bR};
+    }
 
 }
