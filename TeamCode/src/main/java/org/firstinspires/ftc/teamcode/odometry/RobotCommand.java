@@ -11,6 +11,7 @@ package org.firstinspires.ftc.teamcode.Odometry;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients
 
 public class RobotCommand {
@@ -19,11 +20,12 @@ public class RobotCommand {
   private PIDFCoefficients pidf;                      // pidf coefficients
   private Position position;                          // current position on field
 
+  // you need to cast DcMotor -> DcMotorEx
   public RobotCommand(DcMotor[] driveMotors, Position pos) {
-    fL = driveMotors[0];
-    fR = driveMotors[1];
-    bL = driveMotors[2];
-    bR = driveMotors[3];
+    fL = (DcMotorEx)driveMotors[0];
+    fR = (DcMotorEx)driveMotors[1];
+    bL = (DcMotorEx)driveMotors[2];
+    bR = (DcMotorEx)driveMotors[3];
     
     position = pos;
     
@@ -34,7 +36,7 @@ public class RobotCommand {
    * Here, we are initiating our PIDF coefficients to the initial constructor
    */
   public void init() {
-    pidf = new PIDCoefficients();
+    pidf = new PIDFCoefficients();           // change this and tune values
     
     fL.setVelocityPIDFCoefficients(pidf);
     fR.setVelocityPIDFCoefficients(pidf);
