@@ -30,7 +30,10 @@ public class Position {
   public void init() {
     gyro.calibrate();
     
-    for (DcMotor x : motors) x.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    for (DcMotor x : motors) {
+        x.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        x.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
   }
   
   public double getX() {
