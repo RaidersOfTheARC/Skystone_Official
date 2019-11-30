@@ -71,12 +71,14 @@ public class RobotCommand {
      */
     while (displacement[0] > 0 && displacement[1] > 0) {
       double[] speeds = driveMecanum(displacement[0], displacement[1], 0);
+      double[] prevPosits = new double[]{getCurrentX(), getCurrentY()};
       
       fL.setVelocity(speeds[0]);
       fR.setVelocity(speeds[1]);
       bL.setVelocity(speeds[2]);
       bR.setVelocity(speeds[3]);
             
+      position.update(prevPosits);
       displacement = setTarget(tgt);
     }
     
