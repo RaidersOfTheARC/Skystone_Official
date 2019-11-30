@@ -23,13 +23,23 @@ public class AutoTemplate extends LinearOpMode {
     private static final double ODO_WHEEL_DIAM = 3;      // for this example, this is in inches
     private RobotCommand commander;
     private Position robotPosition;
-    private DcMotor[] deadWheels, driveMotors;
+    private DcMotor[] deadWheels;
+    private DriveTrain drive;
     private GyroSensor gyro;
 
     @Override
     public void runOpMode() throws InterruptedException {
+        drive = new Drivetrain(hardwareMap.get(DcMotor.class, "leftFront"),
+                               hardwareMap.get(DcMotor.class, "rightFront"),
+                               hardwareMap.get(DcMotor.class, "leftBack"),
+                               hardwareMap.get(DcMotor.class, "rightBack"));
+        
+        deadWheels = new DcMotor[]{hardwareMap.get(DcMotor.class, "odo1"),
+                                   hardwareMap.get(DcMotor.class, "odo2")};
+        gyro = hardwareMap.get(GyroSensor.class, "gyro");
+        
         robotPosition = new Position(deadWheels, gyro);
-        commander = new RobotCommand(driveMotors, robotPosition);
+        commander = new RobotCommand(drive.getMotors(), robotPosition);
 
         waitForStart();
 
