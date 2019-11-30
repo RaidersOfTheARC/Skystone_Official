@@ -7,6 +7,8 @@ package org.firstinspires.ftc.teamcode.odometry;
  * but for now we will set them to be 1 for the sake of example (exempli gratia).
  * In order to do this, we will use the PID mode RUN_USING_ENCODER. Note that
  * the speeds rely on field-centric modeling.
+ *
+ * Made by you-know-who, so make sure to give me credit!
  */
 
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -61,14 +63,14 @@ public class RobotCommand {
   
   public double[] driveToTarget(double[] tgt) {
     double[] displacement = setTarget(tgt);
-    
-    // add a target tolerance if needed
-    /**
-     * As you can see, what this does is cause the speed to slow down
-     * as the robot nears its target. Make sure to tune the values
-     * for the PIDF coefficients so that the movement is more accurate.
-     */
-    while (displacement[0] > 0 && displacement[1] > 0) {
+    double tolerance = 0;     // tune this as you please
+
+    /*
+      As you can see, what this does is cause the speed to slow down
+      as the robot nears its target tolerance. Make sure to tune the values
+      for the PIDF coefficients so that the movement is more accurate.
+    */
+    while (displacement[0] > tolerance && displacement[1] > tolerance) {
       double[] speeds = driveMecanum(displacement[0], displacement[1], 0);
       double[] prevPosits = new double[]{getCurrentX(), getCurrentY()};
       
@@ -82,6 +84,57 @@ public class RobotCommand {
     }
     
     return position.getPosition();  // use this for telemetry to see if the target position has been reached
+  }
+
+  public double[] turnByAngle(double rad) {
+    double angleTgt = rad + position.getHead();
+    double tolerance = 0;    // tune this value as you please
+
+    /*
+      As you can see, this turns the robot to a calculated turn target.
+      We use an additional P control to decrease the speed as it nears the angle given
+      a certain tolerance, if needed. As the heading nears the target, the speed will
+      decrease on top of the internal PIDF control in the DcMotorEx;
+    */
+    while (position.getHead() < angleTgt + tolerance) {
+      double[] prevPosits = new double[]{getCurrentX(), getCurrentY()};
+      double[] speeds = driveMecanum(0, 0, angleTgt - tolerance - position.getHead());
+
+      fL.setVelocity(speeds[0]);
+      fR.setVelocity(speeds[1]);
+      bL.setVelocity(speeds[2]);
+      bR.setVelocity(speeds[3]);
+
+      position.update(prevPosits);
+    }
+
+    return position.getPosition();  // use this for telemetry to ensure heading is within tolerance
+  }
+
+  public double[] driveWhileTurning(double[] tgt, double rad) {
+    double angleTgt = rad + position.getHead();
+    double[] displacement = setTarget(tgt);
+    double tolerance = 0;    // tune as you please
+    double angleTol = 0;     // tune as you please
+
+    boolean hasTurned = false;
+
+    while (displacement[0] > tolerance && displacement[1] > tolerance) {
+      double[] prevPosits = new double[]{getCurrentX(), getCurrentY()};
+      double turnVal = angleTgt - angleTol - position.getHead();
+      if (turnVal == 0 && !hasTurned) hasTurned = true;
+      if (hasTurned) turnVal = 0;  // this is really just to ensure that turning stops
+      double[] speeds = driveMecanum(displacement[0], displacement[1], turnVal);
+
+      fL.setVelocity(speeds[0]);
+      fR.setVelocity(speeds[1]);
+      bL.setVelocity(speeds[2]);
+      bR.setVelocity(speeds[3]);
+
+      position.update(prevPosits);
+    }
+
+    return position.getPosition();
   }
 
   private double[] driveMecanum(double x, double y, double turn) {
