@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Odometry;
+package org.firstinspires.ftc.teamcode.odometry;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.GyroSensor;
@@ -32,7 +32,7 @@ public class Position {
   public void init() {
     gyro.calibrate();
     
-    for (DcMotor x : motors) {
+    for (DcMotor x : odoPods) {
         x.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         x.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }

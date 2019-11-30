@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Odometry;
+package org.firstinspires.ftc.teamcode.odometry;
 
 /**
  * For our odometry, we will not worry about explaining PID control for simplicity.
@@ -11,7 +11,6 @@ package org.firstinspires.ftc.teamcode.Odometry;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 public class RobotCommand {
@@ -38,10 +37,10 @@ public class RobotCommand {
   public void init() {
     pidf = new PIDFCoefficients();           // change this and tune values
     
-    fL.setVelocityPIDFCoefficients(pidf);
-    fR.setVelocityPIDFCoefficients(pidf);
-    bL.setVelocityPIDFCoefficients(pidf);
-    bR.setVelocityPIDFCoefficients(pidf);
+    fL.setVelocityPIDFCoefficients(pidf.p, pidf.i, pidf.d, pidf.f);
+    fR.setVelocityPIDFCoefficients(pidf.p, pidf.i, pidf.d, pidf.f);
+    bL.setVelocityPIDFCoefficients(pidf.p, pidf.i, pidf.d, pidf.f);
+    bR.setVelocityPIDFCoefficients(pidf.p, pidf.i, pidf.d, pidf.f);
   }
   
   // sets the target position (in ticks) and returns the current horizontal and vertical distance
@@ -82,7 +81,7 @@ public class RobotCommand {
       displacement = setTarget(tgt);
     }
     
-    return position.getPositon();  // use this for telemetry to see if the target position has been reached
+    return position.getPosition();  // use this for telemetry to see if the target position has been reached
   }
 
   private double[] driveMecanum(double x, double y, double turn) {
