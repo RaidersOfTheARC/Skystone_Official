@@ -122,7 +122,7 @@ public class RobotCommand {
     while (displacement[0] > tolerance && displacement[1] > tolerance) {
       double[] prevPosits = new double[]{getCurrentX(), getCurrentY()};
       double turnVal = angleTgt - angleTol - position.getHead();
-      if (turnVal == 0 && !hasTurned) hasTurned = true;
+      if (Math.abs(turnVal) <= angleTol && !hasTurned) hasTurned = true;
       if (hasTurned) turnVal = 0;  // this is really just to ensure that turning stops
       double[] speeds = driveMecanum(displacement[0], displacement[1], turnVal);
 
