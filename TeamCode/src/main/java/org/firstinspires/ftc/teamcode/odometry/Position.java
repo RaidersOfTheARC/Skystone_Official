@@ -19,10 +19,12 @@ public class Position {
   // therefore, this array is of length 2 ({horizontal, vertical})
   private DcMotor[] odoPods;
   private GyroSensor gyro;
+  private double[] pos;
     
   public Position(DcMotor[] mots, GyroSensor gyr) {
     odoPods = mots;
     gyro = gyr;
+    pos = new double[]{0,0,0};
     
     init();
   }
@@ -37,19 +39,28 @@ public class Position {
   }
   
   public double getX() {
-    return odoPods[0].getCurrentPosition();
+    return pos[0];
   }
   
   public double getY() {
-    return odoPods[1].getCurrentPosition();
+    return pos[1];
   }
   
   public double getHead() {
-    return gyro.getHeading();
+    return Math.toRadians(gyro.getHeading());
+  }
+    
+  // assume prevEncoderVals is a two-element array {xi, yi}
+  public void update(double[] prevEncoderVals) {
+    double dx = odoPods[0].getCurrentPosition() - prevEncoderVals[0];
+    double dy = odoPods[1].getCurrentPosition() - prevEncoderVals[1];
+    pos[0] += dx*Math.cos(getHead()) - dy*Math.sin(getHead());
+    pos[1] += dx*Math.sin(getHead()) + dy*Math.cos(getHead());
+    pos[2] = getHead();
   }
   
   public double[] getPosition() {
-    return new double[]{getX(), getY(), getHead()};
+    return pos;
   }
 
 }
